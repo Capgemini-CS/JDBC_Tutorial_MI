@@ -1,18 +1,28 @@
 package com.example.capgemini.demo.repository;
 
+import com.example.capgemini.demo.exception.ResponseMessage;
 import com.example.capgemini.demo.model.Tutorial;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import java.util.List;
 
 @Repository
 public class JdbcTutorialRepository implements TutorialRepository {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
+
+    public JdbcTutorialRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public int save(Tutorial tutorial) {
@@ -62,5 +72,11 @@ public class JdbcTutorialRepository implements TutorialRepository {
     @Override
     public int deleteAll() {
         return jdbcTemplate.update("DELETE from tutorials");
+    }
+
+
+    @ExceptionHandler({MethodArgumentNotValidException.class})
+    public ResponseEntity<ResponseMessage> responseBodyValidation() {
+        return new ResponseEntity<ResponseMessage>(new ResponseMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
